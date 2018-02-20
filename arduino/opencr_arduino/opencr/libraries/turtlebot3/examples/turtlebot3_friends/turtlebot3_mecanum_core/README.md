@@ -6,7 +6,7 @@ This code requires the [OpenCR Board by ROBOTIS](https://github.com/ROBOTIS-GIT/
 
 # Installation
 
-Make sure to install the Arduino IDE and the OpenCR libraries by following [these Instructions](emanual.robotis.com/docs/en/platform/turtlebot3/opencr1_0_software_setup/). Then use the Arduino IDE to upload the turtlebot3_core.ino file in the turtlebot3_core directory onto the OpenCR board.
+Make sure to install the Arduino IDE and the OpenCR libraries by following [these Instructions](emanual.robotis.com/docs/en/platform/turtlebot3/opencr1_0_software_setup/). Then use the Arduino IDE to upload the turtlebot3_mecanum_core.ino file onto the OpenCR board.
 
 # Usage
 
@@ -58,8 +58,8 @@ turtlebot3_mecanm_core_motor_driver.h
 ```
 #define DXL_LEFT_REAR_ID                3       // ID of left rear motor
 #define DXL_RIGHT_REAR_ID               4       // ID of right rear motor
-#define DXL_LEFT_FRONT_ID		            1	      // ID of left front motor
-#define DXL_RIGHT_FRONT_ID           		2	      // ID of right front motor
+#define DXL_LEFT_FRONT_ID               1	// ID of left front motor
+#define DXL_RIGHT_FRONT_ID		2       // ID of right front motor
 #define BAUDRATE                        1000000 // baurd rate of Dynamixel
 ```
 
