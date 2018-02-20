@@ -113,9 +113,6 @@ void loop()
   // Receive data from RC100 
   controllers.getRCdata(goal_velocity);
 
-  // Check push button pressed for simple test drive
-  driveTest(diagnosis.getButtonPress());
-
   // Update the IMU unit
   sensors.updateIMU();
 
@@ -542,7 +539,7 @@ bool calcOdometry(double diff_time)
   last_velocity[LEFT_REAR]  = wheel_l_r_radps;
   last_velocity[RIGHT_REAR] = wheel_r_r_radps;
 
-  // compute odometric pose TODO!!! This is probably wrong!
+  // compute odometric pose
   odom_pose[0] += delta_x * cos(odom_pose[2] + (delta_theta / 2.0));
   odom_pose[1] += delta_y * sin(odom_pose[2] + (delta_theta / 2.0));
   odom_pose[2] += delta_theta;
@@ -555,60 +552,6 @@ bool calcOdometry(double diff_time)
   last_theta = theta;
 
   return true;
-}
-
-/*******************************************************************************
-* Turtlebot3 test drive using push buttons
-*******************************************************************************/
-void driveTest(uint8_t buttons)
-{
-  static bool move[3] = {false, false, false};
-  static int32_t saved_tick[4] = {0, 0, 0, 0};
-  static double diff_encoder = 0.0;
-
-  int32_t current_tick[4] = {0, 0, 0, 0};
-
-  motor_driver.readEncoder(current_tick[0], current_tick[1], current_tick[2], current_tick[3]);
-
-  if (buttons & (1<<0))  
-  {
-    move[LINEAR_X] = true;
-    saved_tick[RIGHT_REAR] = sensor_state_msg.right_encoder;
-
-    diff_encoder = TEST_DISTANCE / (0.207 / 4096); // (Circumference of Wheel) / (The number of tick per revolution)
-  }
-  else if (buttons & (1<<1))
-  {
-    move[ANGULAR] = true;
-    saved_tick[RIGHT_REAR] = sensor_state_msg.right_encoder;
-
-    diff_encoder = (TEST_RADIAN * TURNING_RADIUS) / (0.207 / 4096);
-  }
-
-  if (move[LINEAR_X])
-  {    
-    if (abs(saved_tick[RIGHT_REAR] - current_tick[RIGHT_REAR]) <= diff_encoder)
-    {
-      goal_velocity[LINEAR_X]  = 0.05;
-    }
-    else
-    {
-      goal_velocity[LINEAR_X]  = 0.0;
-      move[LINEAR_X] = false;
-    }
-  }
-  else if (move[ANGULAR])
-  {   
-    if (abs(saved_tick[RIGHT_REAR] - current_tick[RIGHT_REAR]) <= diff_encoder)
-    {
-      goal_velocity[ANGULAR]= -0.7;
-    }
-    else
-    {
-      goal_velocity[ANGULAR]  = 0.0;
-      move[ANGULAR] = false;
-    }
-  }
 }
 
 /*******************************************************************************

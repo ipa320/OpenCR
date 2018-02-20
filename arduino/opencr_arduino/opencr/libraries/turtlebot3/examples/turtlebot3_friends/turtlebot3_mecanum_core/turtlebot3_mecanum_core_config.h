@@ -44,7 +44,7 @@
 
 #include "turtlebot3_mecanum_core_motor_driver.h"
 
-#define INIT_LOG_DATA "This core is compatible with TurtleBot3 Waffle or Waffle Pi"
+#define INIT_LOG_DATA "This core is adjusted for mecanum wheel drive."
 
 #define HARDWARE_VER "1.0.0"
 #define SOFTWARE_VER "1.0.0"
@@ -57,8 +57,6 @@
 #define VERSION_INFORMATION_PUBLISH_PERIOD  1    //hz 
 
 #define NUM_WHEELS                       4
-#define TURNING_RADIUS                   0.1435          // meter (BURGER : 0.080, WAFFLE : 0.1435)
-#define ROBOT_RADIUS                     0.220           // meter (BURGER : 0.105, WAFFLE : 0.220)
 #define ENCODER_MIN                      -2147483648     // raw
 #define ENCODER_MAX                      2147483648      // raw
 
@@ -66,9 +64,6 @@
 #define WHEEL_SEPARATION_X              0.09    // meter
 #define WHEEL_SEPARATION_Y              0.115     // meter
 #define DISTANCE_CENTER_TO_WHEEL        0.165     // meter
-
-#define LEFT 0
-#define RIGHT 1
 
 #define LEFT_FRONT                            0
 #define RIGHT_FRONT                           1
@@ -86,9 +81,6 @@
 
 #define DEG2RAD(x)                       (x * 0.01745329252)  // *PI/180
 #define RAD2DEG(x)                       (x * 57.2957795131)  // *180/PI
-
-#define TEST_DISTANCE                    0.300     // meter
-#define TEST_RADIAN                      3.14      // 180 degree
 
 // Callback function prototypes
 void commandVelocityCallback(const geometry_msgs::Twist& cmd_vel_msg);
