@@ -380,7 +380,7 @@ void publishDriveInformation(void)
 *******************************************************************************/
 void updateOdometry(void)
 {
-  odom.header.frame_id = "odom";
+  odom.header.frame_id = "odom_combined";
   odom.child_frame_id  = "base_link";
 
   odom.pose.pose.position.x = odom_pose[0];
@@ -389,6 +389,7 @@ void updateOdometry(void)
   odom.pose.pose.orientation = tf::createQuaternionFromYaw(odom_pose[2]);
 
   odom.twist.twist.linear.x  = odom_vel[0];
+  odom.twist.twist.linear.y  = odom_vel[1];
   odom.twist.twist.angular.z = odom_vel[2];
 }
 
@@ -434,7 +435,7 @@ void updateTF(geometry_msgs::TransformStamped& odom_tf)
 *******************************************************************************/
 void updateMotorInfo(int32_t left_front_tick, int32_t right_front_tick, int32_t left_rear_tick, int32_t right_rear_tick)
 {
-  int32_t current_tick = 0;
+  int32_t current_tick[NUM_WHEELS] = {0.0, 0.0, 0.0, 0.0};
   static int32_t last_tick[NUM_WHEELS] = {0.0, 0.0, 0.0, 0.0};
 
   if (init_encoder)
@@ -457,28 +458,25 @@ void updateMotorInfo(int32_t left_front_tick, int32_t right_front_tick, int32_t 
     return;
   }
 
-  current_tick = left_front_tick;
+  current_tick[LEFT_FRONT] = left_front_tick;
+  current_tick[RIGHT_FRONT] = right_front_tick;
+  current_tick[LEFT_REAR] = left_rear_tick;
+  current_tick[RIGHT_REAR] = right_rear_tick;
 
-  last_diff_tick[LEFT_FRONT] = current_tick - last_tick[LEFT_FRONT];
-  last_tick[LEFT_FRONT]      = current_tick;
+  last_diff_tick[LEFT_FRONT] = current_tick[LEFT_FRONT] - last_tick[LEFT_FRONT];
+  last_tick[LEFT_FRONT]      = current_tick[LEFT_FRONT];
   last_rad[LEFT_FRONT]       += TICK2RAD * (double)last_diff_tick[LEFT_FRONT];
 
-  current_tick = right_front_tick;
-
-  last_diff_tick[RIGHT_FRONT] = current_tick - last_tick[RIGHT_FRONT];
-  last_tick[RIGHT_FRONT]      = current_tick;
+  last_diff_tick[RIGHT_FRONT] = current_tick[RIGHT_FRONT] - last_tick[RIGHT_FRONT];
+  last_tick[RIGHT_FRONT]      = current_tick[RIGHT_FRONT];
   last_rad[RIGHT_FRONT]       += TICK2RAD * (double)last_diff_tick[RIGHT_FRONT];
 
-  current_tick = left_rear_tick;
-
-  last_diff_tick[LEFT_REAR] = current_tick - last_tick[LEFT_REAR];
-  last_tick[LEFT_REAR]      = current_tick;
+  last_diff_tick[LEFT_REAR] = current_tick[LEFT_REAR] - last_tick[LEFT_REAR];
+  last_tick[LEFT_REAR]      = current_tick[LEFT_REAR];
   last_rad[LEFT_REAR]       += TICK2RAD * (double)last_diff_tick[LEFT_REAR];
 
-  current_tick = right_front_tick;
-
-  last_diff_tick[RIGHT_REAR] = current_tick - last_tick[RIGHT_REAR];
-  last_tick[RIGHT_REAR]      = current_tick;
+  last_diff_tick[RIGHT_REAR] = current_tick[RIGHT_REAR] - last_tick[RIGHT_REAR];
+  last_tick[RIGHT_REAR]      = current_tick[RIGHT_REAR];
   last_rad[RIGHT_REAR]       += TICK2RAD * (double)last_diff_tick[RIGHT_REAR];
 }
 
@@ -509,6 +507,7 @@ bool calcOdometry(double diff_time)
   wheel_l_r_radps = (TICK2RAD * (double)last_diff_tick[LEFT_REAR])/step_time;
   wheel_r_r_radps = (TICK2RAD * (double)last_diff_tick[RIGHT_REAR])/step_time;
 
+  
   if (isnan(wheel_l_f_radps))
     wheel_l_f_radps = 0.0;
   if (isnan(wheel_r_f_radps))
@@ -519,37 +518,37 @@ bool calcOdometry(double diff_time)
     wheel_r_r_radps = 0.0;
 
   
+  //should be + + + + for vx but because two motors are upside-down it is + - + - 
+  //same for the other velocities as well
+  vx = (wheel_l_f_radps - wheel_r_f_radps + wheel_l_r_radps - wheel_r_r_radps) * (WHEEL_RADIUS / 4);
+  vy = ( -wheel_l_f_radps - wheel_r_f_radps + wheel_l_r_radps + wheel_r_r_radps) * (WHEEL_RADIUS / 4);
 
-  vx = (wheel_l_f_radps + wheel_r_f_radps + wheel_l_r_radps + wheel_r_r_radps) * (WHEEL_RADIUS / 4);
-  vy = ( -wheel_l_f_radps + wheel_r_f_radps + wheel_l_r_radps - wheel_r_r_radps) * (WHEEL_RADIUS / 4);
-
-  //w = ( -wheel_l_f_radps + wheel_r_f_radps - wheel_l_r_radps + wheel_r_r_radps) * (WHEEL_RADIUS/(4 * (WHEEL_SEPARATION_X + WHEEL_SEPARATION_Y))) ;
-  orientation = sensors.getOrientation();
+  w = ( -wheel_l_f_radps - wheel_r_f_radps - wheel_l_r_radps - wheel_r_r_radps) * (WHEEL_RADIUS/(4 * (WHEEL_SEPARATION_X + WHEEL_SEPARATION_Y))) ;
+  
+  /*orientation = sensors.getOrientation();
   theta       = atan2f(orientation[1] * orientation[2] + orientation[0] * orientation[3],
                        0.5f - orientation[2] * orientation[2] - orientation[3] * orientation[3]);
+*/
+  delta_theta = w * step_time;
+  odom_pose[2] += delta_theta/2.0;
 
-  delta_theta = theta - last_theta;
-
-  delta_x = vx * step_time;
-  delta_y = vy * step_time;
-  w = delta_theta / step_time;
-
-  last_velocity[LEFT_FRONT]  = wheel_l_f_radps;
-  last_velocity[RIGHT_FRONT] = wheel_r_f_radps;
-  last_velocity[LEFT_REAR]  = wheel_l_r_radps;
-  last_velocity[RIGHT_REAR] = wheel_r_r_radps;
-
-  // compute odometric pose
-  odom_pose[0] += delta_x * cos(odom_pose[2] + (delta_theta / 2.0));
-  odom_pose[1] += delta_y * sin(odom_pose[2] + (delta_theta / 2.0));
-  odom_pose[2] += delta_theta;
+  delta_x = (vx * cos(odom_pose[2]) - vy * sin(odom_pose[2])) * step_time;
+  delta_y = (vx * sin(odom_pose[2]) + vy * cos(odom_pose[2])) * step_time;
+  //w = delta_theta / step_time;
+  
+  odom_pose[0] += delta_x/2.0;
+  odom_pose[1] += delta_y/2.0;
 
   // compute odometric instantaneouse velocity
   odom_vel[0] = vx;
   odom_vel[1] = vy;
   odom_vel[2] = w;
 
-  last_theta = theta;
+  //last_theta = theta;
+  last_velocity[LEFT_FRONT]  = wheel_l_f_radps;
+  last_velocity[RIGHT_FRONT] = wheel_r_f_radps;
+  last_velocity[LEFT_REAR]  = wheel_l_r_radps;
+  last_velocity[RIGHT_REAR] = wheel_r_r_radps;
 
   return true;
 }

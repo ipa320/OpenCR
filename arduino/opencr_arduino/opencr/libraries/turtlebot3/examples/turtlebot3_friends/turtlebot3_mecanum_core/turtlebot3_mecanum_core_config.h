@@ -155,7 +155,7 @@ ros::Publisher cmd_vel_rc100_pub("cmd_vel_rc100", &cmd_vel_rc100_msg);
 
 // Odometry of Turtlebot3
 nav_msgs::Odometry odom;
-ros::Publisher odom_pub("odom", &odom);
+ros::Publisher odom_pub("odom_combined", &odom);
 
 // Joint(Dynamixel) state of Turtlebot3
 sensor_msgs::JointState joint_states;
