@@ -46,7 +46,7 @@
 #define DXL_RIGHT_REAR_ID 4   // ID of right rear motor
 #define DXL_LEFT_FRONT_ID 1   // ID of left front motor
 #define DXL_RIGHT_FRONT_ID 2  // ID of right front motor
-#define BAUDRATE 57600        // baurd rate of Dynamixel
+#define BAUDRATE 1000000        // baurd rate of Dynamixel
 #define DEVICENAME ""         // no need setting on OpenCR
 
 #define TORQUE_ENABLE 1   // Value for enabling the torque

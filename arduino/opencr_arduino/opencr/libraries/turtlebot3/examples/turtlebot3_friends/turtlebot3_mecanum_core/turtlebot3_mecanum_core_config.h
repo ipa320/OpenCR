@@ -45,7 +45,7 @@
 
 #include "turtlebot3_mecanum_core_motor_driver.h"
 
-#define INIT_LOG_DATA "This core is adjusted for mecanum wheel drive."
+#define INIT_LOG_DATA "This core is adjusted for direct command drive."
 
 #define HARDWARE_VER "1.0.0"
 #define SOFTWARE_VER "1.0.0"
@@ -110,7 +110,7 @@ uint32_t current_offset;
 /*******************************************************************************
  * Subscriber
  *******************************************************************************/
-ros::Subscriber<sensor_msgs::JointState> cmd_js_sub_("joint_command", commandJointStateCallback);
+ros::Subscriber<sensor_msgs::JointState> cmd_js_sub_("wheel_command", commandJointStateCallback);
 
 ros::Subscriber<std_msgs::Bool> motor_power_sub("motor_power", motorPowerCallback);
 
@@ -125,7 +125,7 @@ ros::Publisher status_byte_pub_("status_byte", &status_byte_msg_);
 
 // Joint(Dynamixel) state of Turtlebot3
 sensor_msgs::JointState joint_states;
-ros::Publisher joint_states_pub("joint_states", &joint_states);
+ros::Publisher joint_states_pub("wheel_state", &joint_states);
 
 /*******************************************************************************
  * SoftwareTimer of Turtlebot3

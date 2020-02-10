@@ -14,7 +14,7 @@
  * limitations under the License.
  *******************************************************************************/
 
-/* Authors: Yoonseok Pyo, Leon Jung, Darby Lim, HanCheol Cho, Valentin Starlinger */
+/* Authors: Jannik Abbenseth*/
 
 #include "turtlebot3_mecanum_core_config.h"
 
