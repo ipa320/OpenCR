@@ -18,33 +18,61 @@
 
 #include <DynamixelWorkbench.h>
 
-#define DXL_BUS_SERIAL1 "1"            //Dynamixel on Serial1(USART1)  <-OpenCM9.04
-#define DXL_BUS_SERIAL2 "2"            //Dynamixel on Serial2(USART2)  <-LN101,BT210
-#define DXL_BUS_SERIAL3 "3"            //Dynamixel on Serial3(USART3)  <-OpenCM 485EXP
-#define DXL_BUS_SERIAL4 "/dev/ttyUSB0" //Dynamixel on Serial3(USART3)  <-OpenCR
+#if defined(__OPENCM904__)
+  #define DEVICE_NAME "3" //Dynamixel on Serial3(USART3)  <-OpenCM 485EXP
+#elif defined(__OPENCR__)
+  #define DEVICE_NAME ""
+#endif          
 
-#define BAUDRATE  57600
+#define BAUDRATE  1000000
 
 DynamixelWorkbench dxl_wb;
 
 void setup() 
 {
   Serial.begin(57600);
-  while(!Serial); // Open a Serial Monitor
+  while(!Serial); // Wait for Opening Serial Monitor
+
+  const char *log = NULL;
+  bool result = false;
 
   uint8_t scanned_id[16];
   uint8_t dxl_cnt = 0;
   uint8_t range = 100;
 
-  dxl_wb.begin(DXL_BUS_SERIAL4, BAUDRATE);
-  dxl_wb.scan(scanned_id, &dxl_cnt, range);
+  result = dxl_wb.init(DEVICE_NAME, BAUDRATE, &log);
+  if (result == false)
+  {
+    Serial.println(log);
+    Serial.println("Failed to init");
+  }
+  else
+  {
+    Serial.print("Succeeded to init : ");
+    Serial.println(BAUDRATE);  
+  }
 
-  if (dxl_cnt == 0)
-    Serial.println("Can't find Dynamixels");
+  Serial.println("Wait for scan...");
+  result = dxl_wb.scan(scanned_id, &dxl_cnt, range, &log);
+  if (result == false)
+  {
+    Serial.println(log);
+    Serial.println("Failed to scan");
+  }
+  else
+  {
+    Serial.print("Find ");
+    Serial.print(dxl_cnt);
+    Serial.println(" Dynamixels");
 
-  for (int index = 0; index < dxl_cnt; index++)
-    Serial.println("id : " + String(scanned_id[index]) + "   Model Name : " + String(dxl_wb.getModelName(scanned_id[index])));
-  
+    for (int cnt = 0; cnt < dxl_cnt; cnt++)
+    {
+      Serial.print("id : ");
+      Serial.print(scanned_id[cnt]);
+      Serial.print(" model name : ");
+      Serial.println(dxl_wb.getModelName(scanned_id[cnt]));
+    }
+  }  
 }
 
 void loop() 

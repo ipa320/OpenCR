@@ -57,8 +57,7 @@
 #define DXL1_ID                         1                   // Dynamixel#1 ID: 1
 #define DXL2_ID                         2                   // Dynamixel#2 ID: 2
 #define BAUDRATE                        57600
-#define DEVICENAME                      "1"                 // Check which port is being used on your controller
-                                                            // ex) Windows: "COM1"   Linux: "/dev/ttyUSB0"
+#define DEVICENAME                      "OpenCR_DXL_Port"   // This definition only has a symbolic meaning and does not affect to any functionality
 
 #define TORQUE_ENABLE                   1                   // Value for enabling the torque
 #define TORQUE_DISABLE                  0                   // Value for disabling the torque
@@ -114,7 +113,7 @@ void setup()
   int index = 0;
   int dxl_comm_result = COMM_TX_FAIL;             // Communication result
   bool dxl_addparam_result = false;                // addParam result
-  bool dxl_getdata_result = false;                 // GetParam result
+  //bool dxl_getdata_result = false;                 // GetParam result
   int dxl_goal_position[2] = {DXL_MINIMUM_POSITION_VALUE, DXL_MAXIMUM_POSITION_VALUE};         // Goal position
 
   uint8_t dxl_error = 0;                          // Dynamixel error
@@ -231,7 +230,7 @@ void setup()
       if (dxl_comm_result != COMM_SUCCESS) Serial.print(packetHandler->getTxRxResult(dxl_comm_result));
 
       // Check if groupsyncread data of Dynamixel#1 is available
-      dxl_getdata_result = groupSyncRead.isAvailable(DXL1_ID, ADDR_PRO_PRESENT_POSITION, LEN_PRO_PRESENT_POSITION);
+      groupSyncRead.isAvailable(DXL1_ID, ADDR_PRO_PRESENT_POSITION, LEN_PRO_PRESENT_POSITION);
       if (dxl_addparam_result != true)
       {
         Serial.print("[ID:"); Serial.print(DXL1_ID); Serial.println("groupSyncRead getdata failed");
@@ -239,7 +238,7 @@ void setup()
       }
 
       // Check if groupsyncread data of Dynamixel#2 is available
-      dxl_getdata_result = groupSyncRead.isAvailable(DXL2_ID, ADDR_PRO_PRESENT_POSITION, LEN_PRO_PRESENT_POSITION);
+      groupSyncRead.isAvailable(DXL2_ID, ADDR_PRO_PRESENT_POSITION, LEN_PRO_PRESENT_POSITION);
       if (dxl_addparam_result != true)
       {
         Serial.print("[ID:"); Serial.print(DXL2_ID); Serial.println("groupSyncRead getdata failed");

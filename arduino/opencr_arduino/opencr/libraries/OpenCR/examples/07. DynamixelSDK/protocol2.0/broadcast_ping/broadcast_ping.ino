@@ -47,8 +47,7 @@
 
 // Default setting
 #define BAUDRATE                        57600
-#define DEVICENAME                      "1"                 // Check which port is being used on your controller
-
+#define DEVICENAME                      "OpenCR_DXL_Port"   // This definition only has a symbolic meaning and does not affect to any functionality
 
 
 void setup()
@@ -70,8 +69,8 @@ void setup()
 
   int dxl_comm_result = COMM_TX_FAIL;             // Communication result
 
-  uint8_t dxl_error = 0;                          // Dynamixel error
-  uint16_t dxl_model_number;                      // Dynamixel model number
+  //uint8_t dxl_error = 0;                          // Dynamixel error
+  //uint16_t dxl_model_number;                      // Dynamixel model number
 
   std::vector<uint8_t> vec;                       // Dynamixel data storages
 

@@ -18,34 +18,54 @@
 
 #include <DynamixelWorkbench.h>
 
-#define DXL_BUS_SERIAL1 "1"            //Dynamixel on Serial1(USART1)  <-OpenCM9.04
-#define DXL_BUS_SERIAL2 "2"            //Dynamixel on Serial2(USART2)  <-LN101,BT210
-#define DXL_BUS_SERIAL3 "3"            //Dynamixel on Serial3(USART3)  <-OpenCM 485EXP
-#define DXL_BUS_SERIAL4 "/dev/ttyUSB0" //Dynamixel on Serial3(USART3)  <-OpenCR
+#if defined(__OPENCM904__)
+  #define DEVICE_NAME "3" //Dynamixel on Serial3(USART3)  <-OpenCM 485EXP
+#elif defined(__OPENCR__)
+  #define DEVICE_NAME ""
+#endif  
 
 #define BAUDRATE  57600
-#define DXL_ID_1  1
-#define DXL_ID_2  2
+#define DXL_ID    1
 
 DynamixelWorkbench dxl_wb;
 
 void setup() 
 {
   Serial.begin(57600);
-  while(!Serial); // Open a Serial Monitor
+  while(!Serial); // Wait for Opening Serial Monitor
 
-  uint16_t dxl_model_num = 0;
+  const char *log;
+  bool result = false;
 
-  dxl_wb.begin(DXL_BUS_SERIAL4, BAUDRATE);
-  dxl_wb.ping(DXL_ID_1, &dxl_model_num);
+  uint8_t dxl_id = DXL_ID;
+  uint16_t model_number = 0;
 
-  if (dxl_model_num)
-    Serial.println("id : " + String(DXL_ID_1) + "   Model Number : " + String(dxl_model_num));
+  result = dxl_wb.init(DEVICE_NAME, BAUDRATE, &log);
+  if (result == false)
+  {
+    Serial.println(log);
+    Serial.println("Failed to init");
+  }
+  else
+  {
+    Serial.print("Succeeded to init : ");
+    Serial.println(BAUDRATE);  
+  }
 
-  dxl_wb.ping(DXL_ID_2, &dxl_model_num);
-
-  if (dxl_model_num)
-    Serial.println("id : " + String(DXL_ID_2) + "   Model Number : " + String(dxl_model_num));
+  result = dxl_wb.ping(dxl_id, &model_number, &log);
+  if (result == false)
+  {
+    Serial.println(log);
+    Serial.println("Failed to ping");
+  }
+  else
+  {
+    Serial.println("Succeeded to ping");
+    Serial.print("id : ");
+    Serial.print(dxl_id);
+    Serial.print(" model_number : ");
+    Serial.println(model_number);
+  }
 }
 
 void loop() 

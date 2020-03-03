@@ -52,7 +52,14 @@ void vcp_putch(uint8_t ch)
 
 uint8_t vcp_getch(void)
 {
+#if 1
   return CDC_Itf_Getch();
+#else
+  /* for debugging */
+  uint8_t ch = CDC_Itf_Getch();
+  drv_uart_write(DRV_UART_NUM_4, ch);
+  return ch;
+#endif
 }
 
 
@@ -73,7 +80,7 @@ int32_t vcp_write(uint8_t *p_data, uint32_t length)
       ret = 0;
       break;
     }
-    if(ret == length)
+    if(ret == (int32_t) length)
     {
       break;
     }
@@ -109,7 +116,13 @@ int32_t vcp_printf( const char *fmt, ...)
   va_end (arg);
 
 
-  ret = vcp_write( print_buffer, len);
+  ret = vcp_write( (uint8_t *) print_buffer, len);
 
   return ret;
+}
+
+
+BOOL vcp_is_transmitted( void )
+{
+  return CDC_Itf_IsTxTransmitted();
 }
