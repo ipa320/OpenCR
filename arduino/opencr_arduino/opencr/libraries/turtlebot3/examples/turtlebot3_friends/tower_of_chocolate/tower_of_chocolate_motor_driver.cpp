@@ -34,32 +34,38 @@ bool TowerOfChocolateMotorDriver::init(const char** log)
   if (!success)
     return false;
 
-  for (uint8_t dxl_id = 1; dxl_id <= 2; dxl_id++)
-  {
-    success = dxl_wb_.setVelocityControlMode(dxl_id, log);
-    if (!success)
-      return false;
-
-    success = dxl_wb_.torqueOn(dxl_id, log);
-    if (!success)
-      return false;
-  }
-
   return true;
 }
 
 bool TowerOfChocolateMotorDriver::dropItLikeItsHot(uint8_t dxl_id, const char** log)
 {
   bool success = false;
+  uint16_t model_number = 0;
+  success = dxl_wb_.ping(dxl_id, &model_number, log);
+  if (!success)
+    return false;
+
+  int32_t mode;
+  success = dxl_wb_.readRegister(dxl_id, "Operating_Mode", &mode, log);
+  if (!success)
+    return false;
+
+  if (mode != 1)
+  {
+    success = dxl_wb_.setVelocityControlMode(dxl_id, log);
+    if (!success)
+      return false;
+  }
+
+  success = dxl_wb_.torqueOn(dxl_id, log);
+  if (!success)
+    return false;
 
   int32_t position;
   int32_t old_position;
   success = dxl_wb_.getPresentPositionData(dxl_id, &position, log);
   position &= 0xFFF;
 
-  if (!success)
-    return false;
-  success = dxl_wb_.ledOn(dxl_id, log);
   if (!success)
     return false;
   success = dxl_wb_.goalVelocity(dxl_id, 400, log);
@@ -74,7 +80,6 @@ bool TowerOfChocolateMotorDriver::dropItLikeItsHot(uint8_t dxl_id, const char** 
     if (!success)
     {
       dxl_wb_.goalVelocity(dxl_id, 0, log);
-      dxl_wb_.ledOff(dxl_id, log);
       return false;
     }
     position &= 0xFFF;
@@ -82,9 +87,6 @@ bool TowerOfChocolateMotorDriver::dropItLikeItsHot(uint8_t dxl_id, const char** 
   } while (position > old_position);
 
   success = dxl_wb_.goalVelocity(dxl_id, 0, log);
-  if (!success)
-    return false;
-  success = dxl_wb_.ledOff(dxl_id, log);
   if (!success)
     return false;
 

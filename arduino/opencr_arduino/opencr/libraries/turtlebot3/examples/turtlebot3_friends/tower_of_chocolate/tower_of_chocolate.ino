@@ -32,8 +32,14 @@ void setup()
   // Setting for Dynamixel motors
   const char* log_msg;
 
-  motor_driver_.init(&log_msg);
-  nh.logwarn(log_msg);
+  if (motor_driver_.init(&log_msg))
+  {
+    nh.loginfo(log_msg);
+  }
+  else
+  {
+    nh.logerror(log_msg);
+  }
 
   prev_update_time = millis();
 
@@ -68,10 +74,8 @@ void loop()
 void dispenseTower1Callback(const std_msgs::Bool& dispense_message)
 {
   const char* log;
-  char* log_msg;
+  char log_msg[60];
 
-  sprintf(log_msg, "Processing Callback");
-  nh.loginfo(log_msg);
   if (!dispense_message.data)
   {
     return;
@@ -79,7 +83,9 @@ void dispenseTower1Callback(const std_msgs::Bool& dispense_message)
 
   if (motor_driver_.dropItLikeItsHot(motor_ids_[0], &log))
   {
-    nh.loginfo(log);
+    n_ejections_[0]++;
+    sprintf(log_msg, "Tower 1 ejected %d pieces of chocolate.", n_ejections_[0]);
+    nh.loginfo(log_msg);
   }
   else
   {
@@ -89,10 +95,8 @@ void dispenseTower1Callback(const std_msgs::Bool& dispense_message)
 void dispenseTower2Callback(const std_msgs::Bool& dispense_message)
 {
   const char* log;
-  char* log_msg;
+  char log_msg[60];
 
-  sprintf(log_msg, "Processing Callback");
-  nh.loginfo(log_msg);
   if (!dispense_message.data)
   {
     return;
@@ -100,7 +104,9 @@ void dispenseTower2Callback(const std_msgs::Bool& dispense_message)
 
   if (motor_driver_.dropItLikeItsHot(motor_ids_[1], &log))
   {
-    nh.loginfo(log);
+    n_ejections_[1]++;
+    sprintf(log_msg, "Tower 2 ejected %d pieces of chocolate.", n_ejections_[1]);
+    nh.loginfo(log_msg);
   }
   else
   {
@@ -156,7 +162,5 @@ void sendLogMsg(void)
   else
   {
     log_flag = false;
-    sprintf(log_msg, "Alive");
-    nh.loginfo(log_msg);
   }
 }
